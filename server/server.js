@@ -7,11 +7,33 @@
 
 var loopback = require('loopback');
 var boot = require('loopback-boot');
+var cors = require('cors')
+
+var whitelist = ['http://localhost:3000', 'http://example2.com']
+var corsOptions = {
+  origin: function (origin, callback) {
+    console.log("origin", origin)
+       // allow requests with no origin 
+    // (like mobile apps or curl requests)
+    if(!origin) return callback(null, true);
+
+    if(whitelist.indexOf(origin) === -1){
+      var msg = 'The CORS policy for this site does not ' +
+                'allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    
+    return callback(null, true);
+
+  }
+}
+
 
 var app = module.exports = loopback();
 
 app.start = function() {
   // start the web server
+  app.use(cors(corsOptions))
   return app.listen(function() {
     app.emit('started');
     var baseUrl = app.get('url').replace(/\/$/, '');
